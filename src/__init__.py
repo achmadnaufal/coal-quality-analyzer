@@ -1,0 +1,1 @@
+"""Package: coal-quality-analyzer"""
