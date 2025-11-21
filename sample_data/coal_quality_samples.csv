@@ -1,0 +1,9 @@
+sample_id,source_mine,moisture_pct,ash_pct,volatile_matter_pct,fixed_carbon_pct,sulfur_pct,energy_content_mj_kg,calorific_value_kcal_kg
+S001,Kalimantan,8.5,12.3,32.4,46.8,0.8,22.5,5385
+S002,Sumatra,7.2,11.8,31.9,48.1,0.7,23.1,5525
+S003,Borneo,9.1,13.5,33.2,44.2,1.2,21.8,5210
+S004,Kalimantan,8.3,12.1,32.1,47.5,0.75,22.8,5450
+S005,Sumatra,6.9,11.2,31.5,50.4,0.6,23.5,5625
+S006,South,10.2,14.1,34.5,41.2,1.5,20.9,5000
+S007,Kalimantan-Blend,8.0,11.5,31.8,48.7,0.65,23.2,5560
+S008,Premium-Sumatra,5.8,10.5,30.2,53.5,0.4,24.2,5780

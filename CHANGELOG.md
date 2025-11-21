@@ -1,5 +1,19 @@
 # Changelog - Coal Quality Analyzer
 
+## [1.3.0] - 2026-03-11
+
+### Added
+- **Coal Blending Optimization** — New `optimize_coal_blend()` method for:
+  - Optimal coal source composition determination
+  - Blended calorific value calculation
+  - Multi-parameter constraint satisfaction (ash, sulfur limits)
+  - Specification compliance checking
+  - Cost-effective blend formulation
+- **Coal Quality Sample Data** — Created `sample_data/coal_quality_samples.csv`:
+  - 8 coal samples from Indonesian mines
+  - Complete quality parameters (moisture, ash, volatile matter, calorific value)
+  - Blend optimization reference data
+
 ## [1.2.0] - 2026-03-10
 
 ### Added
