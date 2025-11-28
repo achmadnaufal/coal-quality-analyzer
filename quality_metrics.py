@@ -126,3 +126,59 @@ class CoalQualityAnalyzer:
             blended[param] = round(weighted_sum, 2)
         
         return blended
+
+    def classify_coal_grade(self, quality_params: dict) -> dict:
+        """
+        Classify coal grade based on quality parameters (GCV, ash, moisture, sulfur).
+        
+        Uses international coal classification standards (ISO 11760).
+        
+        Args:
+            quality_params: Dict with calorific_value_mj_kg, ash_percent, 
+                           moisture_percent, sulfur_percent
+                           
+        Returns:
+            Dict with grade classification and suitability assessment
+        """
+        gcv = quality_params.get("calorific_value_mj_kg", 0)
+        ash = quality_params.get("ash_percent", 0)
+        moisture = quality_params.get("moisture_percent", 0)
+        sulfur = quality_params.get("sulfur_percent", 0)
+        
+        # Grade classification based on GCV and ash content
+        if gcv >= 26 and ash <= 5:
+            grade = "Premium A"
+            usage = "Power generation, premium coking"
+        elif gcv >= 24 and ash <= 8:
+            grade = "Grade A"
+            usage = "Power generation, industrial use"
+        elif gcv >= 22 and ash <= 12:
+            grade = "Grade B"
+            usage = "Industrial heating, cement"
+        elif gcv >= 20 and ash <= 15:
+            grade = "Grade C"
+            usage = "Steel mills, basic heating"
+        else:
+            grade = "Sub-bituminous"
+            usage = "Power generation (low efficiency)"
+        
+        # Quality score (0-100)
+        gcv_score = min(100, (gcv / 27) * 100)  # Normalize to 27 MJ/kg max
+        ash_score = max(0, 100 - (ash * 5))  # Each 1% ash = -5 points
+        moisture_score = max(0, 100 - (moisture * 10))  # Each 1% moisture = -10 points
+        sulfur_score = max(0, 100 - (sulfur * 20))  # Each 0.5% sulfur = -10 points
+        
+        quality_score = (gcv_score * 0.4 + ash_score * 0.3 + 
+                        moisture_score * 0.2 + sulfur_score * 0.1)
+        
+        return {
+            "coal_grade": grade,
+            "primary_usage": usage,
+            "quality_score": round(quality_score, 1),
+            "calorific_value": gcv,
+            "ash_content": ash,
+            "moisture_content": moisture,
+            "sulfur_content": sulfur,
+            "suitable_for_power_gen": grade in ["Premium A", "Grade A", "Grade B"],
+            "suitable_for_coking": grade in ["Premium A", "Grade A"],
+        }
