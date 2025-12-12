@@ -1,5 +1,17 @@
 # Changelog - Coal Quality Analyzer
 
+## [1.5.0] - 2026-03-17
+
+### Added
+- **Export Compliance Checker** (`src/export_compliance.py`) — coal batch validation against market specs
+  - `CoalBatch` dataclass: GCV, moisture, ash, sulfur, VM validation
+  - `ExportComplianceChecker`: Japan, China, India, Indonesian domestic standards
+  - Per-parameter pass/fail with deviation amounts
+  - Fleet-level compliance summary for batch processing
+  - Continuity check for proximate analysis sum
+- **Unit tests** — 14 new tests in `tests/test_export_compliance.py`
+- **Sample data** — `sample_data/export_batches.csv`: 9 batches across 4 markets
+
 ## [1.4.0] - 2026-03-15
 
 ### Added
