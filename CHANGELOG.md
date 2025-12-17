@@ -1,5 +1,22 @@
 # Changelog - Coal Quality Analyzer
 
+## [1.6.0] - 2026-03-18
+
+### Added
+- **Calorific Value Predictor** (`src/calorific_value_predictor.py`) — empirical GCV prediction and coal rank classification
+  - `ProximateAnalysis` and `UltimateAnalysis` dataclasses with full input validation and auto-calculated fields (FC, daf VM, dmmf FC)
+  - Three GCV prediction formulae: Dulong (ultimate), Boie (ultimate, default), Majumdar regression (proximate — calibrated for SE Asian coals)
+  - ASTM D388 coal rank classification (Meta-anthracite through Lignite B) from GCV and dmmf fixed carbon
+  - `validate_lab_result()`: cross-checks reported GCV against prediction with PASS/WARNING/FAIL flags (configurable tolerance)
+  - `batch_predict()`: multi-sample processing with automatic method selection (ultimate > proximate fallback)
+- **Sample data** — `sample_data/proximate_ultimate_analysis.csv` with 10 Indonesian coal samples (Kalimantan, South Sumatra, Papua)
+- **Unit tests** — 30 tests in `tests/test_calorific_value_predictor.py` covering all formulae, rank classification, validation flags, and edge cases
+
+### References
+- Dulong (1868), Boie (1953) calorific value formulae
+- Majumdar et al. (1998) SE Asian coal regression
+- ASTM D388-19 coal rank classification
+
 ## [1.5.0] - 2026-03-17
 
 ### Added
