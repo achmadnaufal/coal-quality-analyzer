@@ -1,5 +1,19 @@
 # Changelog - Coal Quality Analyzer
 
+## [1.9.0] - 2026-03-26
+
+### Added
+- **AshFusionTemperatureInterpreter** (`src/ash_fusion_temperature_interpreter.py`) — ISO 540/ASTM D1857 AFT risk analysis
+  - AshComposition dataclass with major oxide inputs (SiO2, Al2O3, Fe2O3, CaO, MgO, Na2O, K2O, TiO2)
+  - Computed indices: Base/Acid Ratio (B/A), Silica Ratio (SR), Slagging Index Rs (B/A × S), Fouling Index (B/A × Na2O)
+  - Slagging risk classification: LOW / MEDIUM / HIGH / SEVERE vs Rs thresholds
+  - Fouling risk classification: LOW / MEDIUM / HIGH / SEVERE vs FI thresholds
+  - AshFusionTemperatures dataclass: DT, ST, HT, FT with temperature-stage validation
+  - Fusion span and high-fusion flag (FT ≥ 1400°C) for boiler compatibility
+  - Operational furnace recommendations: slag-tap suitability, rapid fusion warning, soot-blower guidance
+  - `batch_interpret()` for multi-sample lab report processing
+- Unit tests: 14 new tests in `tests/test_ash_fusion_temperature_interpreter.py`
+
 ## [1.8.0] - 2026-03-23
 
 ### Added
