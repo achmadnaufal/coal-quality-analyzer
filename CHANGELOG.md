@@ -130,3 +130,27 @@
 ### Added
 
 - Initial coal quality analyzer
+
+## [2.0.0] - 2026-03-27
+
+### Added
+- **Spontaneous Combustion Risk Assessor** (`src/spontaneous_combustion_risk.py`) — Sponcom risk scoring for coal stockpile safety management
+  - `CoalSample` dataclass: proximate analysis, sulfur, GCV, oxygen, inertinite, stockpile geometry, ambient conditions; auto-computed `fixed_carbon_daf_pct` and `estimated_oxygen_pct` (rank-based fallback)
+  - Full input validation: 13 quality parameters with domain-appropriate ranges
+  - `SpontaneousCombustionRiskAssessor` with configurable temperature monitoring frequency
+  - `estimate_cpt()`: Crossing Point Temperature estimation from VM, oxygen, moisture, sulfur, inertinite (CPT range 100–250°C)
+  - CPT susceptibility classes: very_high (<140°C), high (<155°C), moderate (<175°C), low (≥175°C)
+  - 7-factor risk driver scoring: rank_reactivity, volatile_matter, oxygen_content, stockpile_geometry, ambient_temperature, age_in_stockpile, monitoring_gap
+  - `_composite_risk_index()`: weighted risk score (0–100)
+  - Risk classes: critical (≥75), high (≥55), moderate (≥35), low (<35)
+  - `assess()`: full single-sample assessment with mitigation actions and safe stockpile life estimate
+  - `batch_assess()`: multi-sample assessment sorted by risk descending
+  - `high_risk_stockpiles()`: filter to critical/high risk only
+  - `mine_risk_summary()`: aggregated per-mine statistics with has_critical_sample flag
+  - Domain-appropriate mitigation: compaction, CO monitoring, FIFO dispatch, antioxidant coating, emergency response
+- **Unit tests** — 34 new tests in `tests/test_spontaneous_combustion_risk.py` (all passing)
+
+### References
+- ADB (2012) Indonesian Coal Sector Guidelines: Spontaneous Combustion Management
+- Cliff et al. (1998) Testing for self-heating susceptibility. CSIRO Coal reports
+- SNI 13-6499-2000 Indonesian standard for coal storage and handling
