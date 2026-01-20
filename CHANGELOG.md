@@ -1,3 +1,10 @@
+## [New] - 2026-03-28
+### Added
+- Edge case validators and handlers
+- Comprehensive unit tests
+- Realistic sample data (realistic_data.csv)
+- Enhanced README with validation examples
+
 # Changelog - Coal Quality Analyzer
 
 ## [1.9.0] - 2026-03-26

@@ -100,3 +100,9 @@ MIT License — free to use, modify, and distribute.
 ## Usage Examples
 
 Refer to the `tests/` directory for comprehensive example implementations.
+
+## Edge Case Handling
+
+This version includes improved validation and edge case handling across all data inputs.
+See sample_data/realistic_data.csv for example datasets.
+
