@@ -1,3 +1,17 @@
+## [2.0.0] - 2026-03-30
+
+### Added
+- **ThermalPriceIndexCalculator** (`src/thermal_price_index_calculator.py`)
+  - `ThermalPriceIndexCalculator` — computes adjusted thermal coal prices using GAR/NAR calorific value methodology for Indonesian and Newcastle-linked export contracts
+  - `CoalPriceAdjustment` — itemised adjustment record: CV adjustment (pro-rata), moisture penalty/bonus, ash penalty/bonus, sulphur penalty/bonus, total adjustment, realised price, adjustment %
+  - `BlendedIndexResult` — weighted blended benchmark price from multiple indices (Newcastle, ICI, etc.)
+  - Three reference spec templates: GAR5500, GAR5000, NAR6000 with default penalty/bonus rate tables
+  - `calculate_adjustment()` — single cargo price realisation
+  - `batch_adjustments()` + `batch_summary()` — fleet/month cargo pricing
+  - `blend_indices()` — weighted blend of multiple benchmark indices with normalised weights
+  - `convert_price_basis()` — GAR ↔ NAR price basis conversion
+- **Test Suite** (`tests/test_thermal_price_index_calculator.py`) — 40 unit tests covering all adjustment types, basis conversions, blending, edge cases, and batch operations
+
 ## [New] - 2026-03-28
 ### Added
 - Edge case validators and handlers
