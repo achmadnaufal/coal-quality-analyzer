@@ -1,3 +1,21 @@
+## [2.1.0] - 2026-03-30
+
+### Added
+- **Stockpile Heat Balance Calculator** (`src/stockpile_heat_balance_calculator.py`) — daily thermal simulation of coal stockpile temperature for spontaneous combustion management
+  - 4 coal ranks: lignite, subbituminous, bituminous, anthracite (Arrhenius Q0/Ea parameters from Carras & Young 1994 and Nugroho et al. 2000)
+  - Forward Euler integration over configurable time step (0.1–24 hr)
+  - Heat generation: Arrhenius oxidation with optional volatile-matter scaling
+  - Heat loss: convective (wind-adjusted h), evaporative (latent heat 2.45 MJ/kg)
+  - Risk flags per day: OK / WATCH (≥70°C) / WARNING (≥100°C) / CRITICAL (≥150°C)
+  - `equilibrium_temperature_c()`: bisection solver for steady-state temperature
+  - Cone-geometry surface area estimation from volume + height
+  - `SimulationResult.summary()`: milestone days and peak temperature
+- **Unit tests** — 31 new tests in `tests/test_stockpile_heat_balance_calculator.py`
+
+### References
+- Carras & Young (1994) Self-heating of coal and related materials. PECS 20(1):1–15.
+- Nugroho et al. (2000) Thermal analysis of Indonesian and Australian coals. Fuel 79(14):1951–1961.
+
 ## [2.0.0] - 2026-03-30
 
 ### Added
