@@ -1,3 +1,22 @@
+## [2.2.0] - 2026-03-31
+
+### Added
+- **Coal Blending Quality Predictor** (`src/coal_blending_quality_predictor.py`) — multi-component blend quality prediction with ASTM spec compliance
+  - `CoalComponent` dataclass: proportion%, CV (MJ/kg GAR), ash, moisture, sulfur, VM, HGI, Na, Cl, cost
+  - `BlendSpecification` dataclass: configurable CV/ash/moisture/sulfur/HGI/Na/Cl limits
+  - `CoalBlendingQualityPredictor` class with mass-weighted linear mixing rules
+  - Sengupta (2002) sqrt-weighted HGI blend correction (more accurate than linear averaging)
+  - ASTM D388 rank classification from CV and volatile matter
+  - Sodium (>0.3%) and chlorine (>100 ppm) caution flags for slagging/corrosion risk
+  - `optimise_proportions()`: 2-component grid search for target CV with tolerance window
+  - Violation messages per failed spec criterion with specific values
+- **Unit tests** — 26 new tests in `tests/test_coal_blending_quality_predictor.py` (all passing)
+
+### References
+- ASTM D388 (2019) Standard Classification of Coals by Rank.
+- Sengupta (2002) HGI of coal blends. Fuel 81:979-986.
+- World Bank (2009) Coal Plant Performance — Quality Specifications.
+
 ## [2.1.0] - 2026-03-30
 
 ### Added
