@@ -1,3 +1,10 @@
+## [2.3.0] - 2026-04-02
+
+### Added
+- **WashabilityTrompAnalyzer** (`src/washability_tromp_analyzer.py`) — Float-sink washability analysis with Tromp partition curve Ep calculation organic efficiency and DMS cut-point optimisation
+- **Unit tests** — new comprehensive test suite in `tests/test_washability_tromp_analyzer.py`
+- **CHANGELOG** updated to v2.3.0
+
 ## [2.2.0] - 2026-03-31
 
 ### Added
