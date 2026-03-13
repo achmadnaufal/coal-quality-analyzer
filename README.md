@@ -5,6 +5,7 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)]()
 [![Domain](https://img.shields.io/badge/domain-Mining%20%26%20Energy-555555.svg)]()
 [![Standard](https://img.shields.io/badge/standard-HBA%20%7C%20ICI%204%20%7C%20Newcastle-orange.svg)]()
+[![Last Commit](https://img.shields.io/github/last-commit/achmadnaufal/coal-quality-analyzer.svg)]()
 
 > **End-to-end coal quality analytics for Indonesian thermal coal operations** — grade classification, blending simulation, export price benchmarking, stockpile thermal risk modeling, and specification compliance — all in Python.
 
@@ -23,6 +24,7 @@ Built for coal trading, mine operations, and export compliance workflows across 
 | ✅ **Compliance Checker** | Per-parameter violation detail against buyer spec limits |
 | 🌡️ **Stockpile Heat Model** | Arrhenius thermal simulation — spontaneous combustion risk flags |
 | 📊 **Batch Processing** | Analyze CSV/Excel batches with summary statistics |
+| 🧪 **Washability & Tromp Analyzer** *(v2.3)* | Float-sink washability table, Tromp partition curve, Ep value, optimal cut density, and organic efficiency per AS 4156.1 / Napier-Munn methodology |
 
 ---
 
@@ -125,16 +127,21 @@ graph TD
     
     B --> I[StockpileHeatBalance<br/>Arrhenius thermal model]
     I --> J[🔥 Risk Flags<br/>Low / Medium / High / Critical]
+
+    B --> W[WashabilityTrompAnalyzer<br/>src/washability_tromp_analyzer.py]
+    W --> X[Tromp Curve · Ep value<br/>Organic efficiency · Cut density]
     
     D --> K[📊 Reports & Alerts]
     E --> K
     F --> K
     H --> K
     J --> K
+    X --> K
 
     style A fill:#37474f,color:#fff
     style K fill:#bf360c,color:#fff
     style I fill:#e65100,color:#fff
+    style W fill:#1565c0,color:#fff
 ```
 
 ---
@@ -191,6 +198,44 @@ Stockpile Risk Assessment:
   High risk:     8 samples (monitor closely)
   Medium risk:  24 samples (weekly checks)
   Low risk:     66 samples (routine monitoring)
+```
+
+### 🧪 Washability & Tromp Curve — Example Output
+
+```python
+from src.washability_tromp_analyzer import WashabilityTrompAnalyzer, FloatSinkFraction
+
+fractions = [
+    FloatSinkFraction(1.30, 1.35, mass_pct=12.5, ash_pct=3.2,  gcv_adb_kcal_kg=6450),
+    FloatSinkFraction(1.35, 1.40, mass_pct=18.3, ash_pct=5.8,  gcv_adb_kcal_kg=6280),
+    FloatSinkFraction(1.40, 1.45, mass_pct=22.1, ash_pct=9.4,  gcv_adb_kcal_kg=6050),
+    FloatSinkFraction(1.45, 1.50, mass_pct=15.7, ash_pct=14.6, gcv_adb_kcal_kg=5720),
+    FloatSinkFraction(1.50, 1.60, mass_pct=14.2, ash_pct=22.3, gcv_adb_kcal_kg=5190),
+    FloatSinkFraction(1.60, float('inf'), mass_pct=17.2, ash_pct=48.9, gcv_adb_kcal_kg=3850),
+]
+result = WashabilityTrompAnalyzer(fractions, target_ash_pct=10.0, misplacement_factor=0.08).analyse()
+```
+
+```
+=== Float-Sink Washability Analysis — Kalimantan Thermal Coal ===
+
+Feed ash:              17.41%
+Target product ash:    10.0%
+
+Washability Results:
+  Theoretical yield @ target ash:  77.6%   (maximum possible clean coal)
+  Optimal DMS cut density:          1.52 RD
+  Actual yield @ cut density:      57.2%
+  Organic efficiency:              73.7%   (actual / theoretical)
+
+Dense Medium Separation Efficiency:
+  Ep value:    0.200  (Ecart Probable — lower = sharper separation)
+  Product ash @ 1.52 RD cut:   10.00%  ✅ Meets buyer spec
+  Reject ash  @ 1.52 RD cut:   43.07%
+
+Tromp Partition Curve:
+  Cut density  1.52 RD → partition number 0.497
+  (0.0 = perfect float product, 1.0 = perfect sink — midpoint at cut density)
 ```
 
 ---
