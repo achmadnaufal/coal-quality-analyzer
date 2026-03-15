@@ -182,3 +182,149 @@ class CoalQualityAnalyzer:
             "suitable_for_power_gen": grade in ["Premium A", "Grade A", "Grade B"],
             "suitable_for_coking": grade in ["Premium A", "Grade A"],
         }
+
+    @staticmethod
+    def calculate_export_premium(
+        gcv_mj_kg: float,
+        ash_pct: float,
+        sulfur_pct: float,
+        moisture_pct: float,
+        benchmark_price_usd: float = 100.0,
+        benchmark_gcv: float = 25.0,
+    ) -> dict:
+        """
+        Calculate export price premium or discount vs benchmark specification.
+
+        Uses a penalty/bonus system based on deviation from benchmark parameters.
+        Commonly used for Indonesian HBA (Harga Batubara Acuan) adjustments.
+
+        Args:
+            gcv_mj_kg: Gross calorific value in MJ/kg (AR basis)
+            ash_pct: Ash content percentage
+            sulfur_pct: Total sulfur percentage
+            moisture_pct: Total moisture percentage
+            benchmark_price_usd: Reference coal price (USD/tonne), default 100
+            benchmark_gcv: Reference GCV spec (MJ/kg), default 25.0 MJ/kg
+
+        Returns:
+            Dict with adjusted_price, premium_discount, quality_adjustments breakdown
+
+        Raises:
+            ValueError: If gcv_mj_kg <= 0 or benchmark_price_usd <= 0
+
+        Example:
+            >>> result = CoalQualityAnalyzer.calculate_export_premium(
+            ...     gcv_mj_kg=24.5, ash_pct=9.2, sulfur_pct=0.7,
+            ...     moisture_pct=11.5, benchmark_price_usd=90.0
+            ... )
+            >>> print(f"Adjusted price: ${result['adjusted_price']:.2f}/t")
+        """
+        if gcv_mj_kg <= 0:
+            raise ValueError("gcv_mj_kg must be positive")
+        if benchmark_price_usd <= 0:
+            raise ValueError("benchmark_price_usd must be positive")
+        if not (0 <= ash_pct <= 100):
+            raise ValueError("ash_pct must be between 0 and 100")
+        if not (0 <= sulfur_pct <= 10):
+            raise ValueError("sulfur_pct must be between 0 and 10")
+
+        adjustments = {}
+
+        # GCV adjustment: proportional to calorific value ratio
+        gcv_ratio = gcv_mj_kg / benchmark_gcv
+        gcv_adj = benchmark_price_usd * (gcv_ratio - 1.0)
+        adjustments["gcv_adjustment"] = round(gcv_adj, 2)
+
+        # Ash penalty: -$0.40/tonne per 1% ash above 10%
+        ash_penalty = max(0.0, (ash_pct - 10.0) * 0.40)
+        adjustments["ash_penalty"] = round(-ash_penalty, 2)
+
+        # Sulfur penalty: -$1.50/tonne per 0.1% sulfur above 0.8%
+        sulfur_penalty = max(0.0, (sulfur_pct - 0.8) * 15.0)
+        adjustments["sulfur_penalty"] = round(-sulfur_penalty, 2)
+
+        # Moisture penalty: -$0.25/tonne per 1% moisture above 12%
+        moisture_penalty = max(0.0, (moisture_pct - 12.0) * 0.25)
+        adjustments["moisture_penalty"] = round(-moisture_penalty, 2)
+
+        total_adj = gcv_adj - ash_penalty - sulfur_penalty - moisture_penalty
+        adjusted_price = max(0.0, benchmark_price_usd + total_adj)
+
+        return {
+            "adjusted_price_usd_per_tonne": round(adjusted_price, 2),
+            "benchmark_price_usd_per_tonne": benchmark_price_usd,
+            "total_adjustment_usd": round(total_adj, 2),
+            "premium_or_discount": "premium" if total_adj >= 0 else "discount",
+            "quality_adjustments": adjustments,
+            "calorific_ratio": round(gcv_ratio, 3),
+        }
+
+    @staticmethod
+    def check_specification_compliance(
+        params: dict,
+        spec: dict,
+    ) -> dict:
+        """
+        Check whether coal quality parameters meet a given specification.
+
+        Args:
+            params: Actual coal parameters dict (e.g. {'gcv': 24.0, 'ash': 11.0, ...})
+            spec: Specification dict with 'min' and/or 'max' for each parameter
+
+        Returns:
+            Dict with overall compliance status and per-parameter results
+
+        Raises:
+            ValueError: If params or spec are empty
+
+        Example:
+            >>> params = {'gcv': 24.0, 'ash': 11.5, 'sulfur': 0.7, 'moisture': 12.0}
+            >>> spec = {'gcv': {'min': 23.0}, 'ash': {'max': 12.0}, 'sulfur': {'max': 1.0}}
+            >>> result = CoalQualityAnalyzer.check_specification_compliance(params, spec)
+            >>> print(result['compliant'])  # True or False
+        """
+        if not params:
+            raise ValueError("params dict cannot be empty")
+        if not spec:
+            raise ValueError("spec dict cannot be empty")
+
+        results = {}
+        all_compliant = True
+
+        for param, limits in spec.items():
+            if param not in params:
+                results[param] = {"status": "missing", "value": None, "compliant": False}
+                all_compliant = False
+                continue
+
+            value = params[param]
+            min_val = limits.get("min")
+            max_val = limits.get("max")
+
+            compliant = True
+            violations = []
+            if min_val is not None and value < min_val:
+                compliant = False
+                violations.append(f"below min ({min_val})")
+            if max_val is not None and value > max_val:
+                compliant = False
+                violations.append(f"above max ({max_val})")
+
+            if not compliant:
+                all_compliant = False
+
+            results[param] = {
+                "value": value,
+                "compliant": compliant,
+                "violations": violations,
+                "min_spec": min_val,
+                "max_spec": max_val,
+            }
+
+        return {
+            "compliant": all_compliant,
+            "compliance_rate": round(
+                sum(1 for r in results.values() if r.get("compliant")) / len(results) * 100, 1
+            ),
+            "parameters": results,
+        }

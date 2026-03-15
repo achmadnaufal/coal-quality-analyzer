@@ -1,5 +1,17 @@
 # Changelog - Coal Quality Analyzer
 
+## [1.4.0] - 2026-03-15
+
+### Added
+- **Export Premium Calculator** — `calculate_export_premium()`: Adjusts coal price vs HBA benchmark based on GCV, ash, sulfur, and moisture deviations; returns premium/discount breakdown per parameter
+- **Specification Compliance Checker** — `check_specification_compliance()`: Validates coal parameters against buyer/contract specs with per-parameter violation detail and overall compliance rate
+- **Unit Tests** — 11 new tests in `tests/test_export_premium.py` covering premium/discount logic, edge cases, and validation errors
+- **Sample Data** — Added `sample_data/export_specs.csv` with typical Indonesian export specifications
+
+### Improved
+- README: Added usage examples for export pricing and compliance checking
+- Enhanced docstrings with `Raises` and `Example` sections throughout
+
 ## [1.3.0] - 2026-03-11
 
 ### Added
