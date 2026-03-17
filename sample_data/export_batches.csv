@@ -1,0 +1,10 @@
+batch_id,mine_code,gcv_adb_kcal_kg,total_moisture_pct,ash_adb_pct,total_sulfur_adb_pct,volatile_matter_adb_pct,fixed_carbon_adb_pct,tonnes,destination_market,compliant
+BATCH-2025-KPC-001,KPC-EK,6350,11.2,10.8,0.52,38.5,50.7,52000,japan_standard,true
+BATCH-2025-KPC-002,KPC-EK,6180,13.5,12.0,0.68,37.2,50.8,48000,japan_standard,true
+BATCH-2025-KPC-003,KPC-EK,5920,16.8,14.5,0.71,38.8,46.7,45000,japan_standard,false
+BATCH-2025-MHU-001,MHU-PKP,5600,18.2,18.0,1.20,40.5,41.5,38000,china_standard,true
+BATCH-2025-MHU-002,MHU-PKP,5350,22.0,24.0,1.45,39.8,36.2,35000,china_standard,false
+BATCH-2025-IBT-001,IBT-BRU,6050,14.0,13.5,0.75,37.5,49.0,41000,india_standard,true
+BATCH-2025-IBT-002,IBT-BRU,5820,17.5,21.0,0.95,36.0,43.0,39000,india_standard,false
+BATCH-2025-DOM-001,DOM-SMD,4800,28.0,22.0,1.80,42.0,36.0,30000,indonesian_domestic,true
+BATCH-2025-DOM-002,DOM-SMD,4200,33.0,28.0,1.90,45.0,27.0,28000,indonesian_domestic,true
