@@ -1,3 +1,9 @@
+## [2.4.0] - 2026-04-03
+
+### Added
+- **AdvancedSponcomRiskClassifier** (`src/spontaneous_combustion_risk_advanced.py`) — Enhanced spontaneous combustion risk assessment with Crossing Point Temperature (CPT), R70 index, AS 4264.1 category classification, incubation period estimation, oxygen depletion modeling, and ranked mitigation actions. Covers lignite through anthracite across tropical ambient conditions.
+- **Unit tests** — 30 tests in `tests/test_sponcom_risk_advanced.py`.
+
 ## [2.3.0] - 2026-04-02
 
 ### Added
