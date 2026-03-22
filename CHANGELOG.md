@@ -1,5 +1,24 @@
 # Changelog - Coal Quality Analyzer
 
+## [1.7.0] - 2026-03-22
+
+### Added
+- **Moisture Bases Converter** (`src/moisture_bases_converter.py`) — ISO 17246 / ASTM D3180 coal quality basis conversion
+  - Converts proximate analysis parameters across four bases: AR (As-Received), AD (Air-Dried), DB (Dry Basis), DAF (Dry-Ash-Free)
+  - Full bidirectional support: all 12 pairwise basis conversions (AR↔AD, AR↔DB, AR↔DAF, AD↔DB, AD↔DAF, DB↔DAF)
+  - `convert()` — single-parameter conversion with required moisture/ash input validation
+  - `gcv_gar_to_gad()` — convenience wrapper for ISO 1928 GCV GAR→GAD conversion (used in Indonesian export contracts)
+  - `convert_full_analysis()` — converts an entire ProximateAnalysis dataclass to a target basis in one call
+  - `batch_convert()` — applies conversion across a list of row-dicts (pipeline-friendly for tabular data)
+  - `ProximateAnalysis` dataclass with basis validation and auto-uppercase normalization
+  - All inputs validated: basis codes, moisture range [0–100], non-negative moisture requirement
+- **Unit tests** — 22 new tests in `tests/test_moisture_bases_converter.py` covering roundtrips, edge cases, and error handling
+
+### References
+- ISO 17246:2010 Coal — Proximate Analysis
+- ASTM D3180 Standard Practice for Calculating Coal and Coke Analyses
+- ISO 1928:2009 Solid mineral fuels — Determination of gross calorific value
+
 ## [1.6.0] - 2026-03-18
 
 ### Added
