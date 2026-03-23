@@ -1,5 +1,23 @@
 # Changelog - Coal Quality Analyzer
 
+## [1.8.0] - 2026-03-23
+
+### Added
+- `src/wash_plant_yield_calculator.py` — Wash plant mass balance and yield prediction
+  - `WashabilityFraction` dataclass with float-sink density, mass, ash, and CV
+  - `WashPlantYieldCalculator` with Tromp curve separation efficiency model
+  - `calculate_yield()` — clean coal yield, ash, and CV at any SG cut point
+  - `theoretical_yield_at_ash()` — maximum yield at a given product ash specification
+  - `yield_curve()` — full yield-ash curve across all density fractions
+  - `feed_quality_summary()` — weighted-average raw feed quality
+  - Separator types: DMC, DM Bath, Jig, Spiral, Reflux Classifier
+- `data/sample_washability_data.csv` — float-sink data for 2 Kalimantan/Sumatra samples
+- 27 unit tests in `tests/test_wash_plant_yield.py`
+
+### References
+- Wills' Mineral Processing Technology (8th ed.)
+- Tromp Curve methodology for dense medium separation
+
 ## [1.7.0] - 2026-03-22
 
 ### Added
