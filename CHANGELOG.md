@@ -1,3 +1,23 @@
+## [0.6.0] - 2026-04-14
+
+### Added
+- **ContractComplianceChecker** (`coal_quality/compliance_checker.py`)
+  - `ContractSpec` dataclass: ash/sulfur/moisture/GHV specs + penalty schedule
+  - `InspectionResult` dataclass: lot sample results across all quality parameters
+  - `check_single_lot()`: PASS/FAIL per parameter vs contract spec
+  - `check_multi_lot()`: aggregate compliance across lots
+  - `calculate_penalties()`: out-of-spec penalty computation
+  - `lot_risk_classification()`: LOW/MEDIUM/HIGH based on proximity to spec limits
+  - `vendor_performance_summary()`: per-vendor compliance statistics
+  - `acceptance_probability()`: logistic acceptance probability for new lots
+- **Unit tests** — 25+ tests in `tests/test_compliance_checker.py`
+- **Sample data** — `sample_data/contract_compliance_data.csv` (20 lots, 3 contracts)
+
+### References
+- ISO 23009-1 Coal Trade Specifications
+- ASTM D3172 proximate analysis standards
+- GCCSI Coal Trading Contract Standards (2022)
+
 ## [2.4.0] - 2026-04-03
 
 ### Added

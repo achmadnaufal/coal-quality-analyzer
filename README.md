@@ -22,6 +22,7 @@ Built for coal trading, mine operations, and export compliance workflows across 
 | ⚖️ **Blending Simulator** | Blend two or more coal sources to meet buyer specification |
 | 💵 **Price Calculator** | Export premium/discount vs HBA, ICI 4, and Newcastle benchmarks |
 | ✅ **Compliance Checker** | Per-parameter violation detail against buyer spec limits |
+| 🧾 **ContractComplianceChecker** *(v0.6)* | Lot-level and aggregate contractual compliance — PASS/FAIL per parameter, penalty calculation, lot risk classification, vendor performance summary, and logistic acceptance probability |
 | 🌡️ **Stockpile Heat Model** | Arrhenius thermal simulation — spontaneous combustion risk flags |
 | 📊 **Batch Processing** | Analyze CSV/Excel batches with summary statistics |
 | 🧪 **Washability & Tromp Analyzer** *(v2.3)* | Float-sink washability table, Tromp partition curve, Ep value, optimal cut density, and organic efficiency per AS 4156.1 / Napier-Munn methodology |
@@ -88,6 +89,48 @@ check = CoalQualityAnalyzer.check_specification_compliance(params, spec)
 print(f"Compliant:       {check['compliant']}")           # True
 print(f"Compliance rate: {check['compliance_rate']}%")    # 100.0%
 print(f"Violations:      {check['violations']}")          # []
+```
+
+### Contract Specification Compliance
+
+```python
+from coal_quality.compliance_checker import ComplianceChecker, ContractSpec, InspectionResult
+
+checker = ComplianceChecker()
+spec = ContractSpec(
+    contract_id="CTR-001", buyer_name="Power Plant A", coal_grade="GCV5800",
+    ash_max_pct=14.0, sulfur_max_pct=0.70, moisture_max_pct=18.0,
+    gcv_min_mjkg=23.0, price_usd_t=65.0, penalty_per_excess_unit=2.5,
+    acceptance_tolerance_pct=5.0,
+)
+result = InspectionResult(
+    lot_id="LOT-2024-01", contract_id="CTR-001", sample_date="2026-01-15",
+    ash_pct=14.8, sulfur_pct=0.65, moisture_pct=17.5,
+    gcv_mjkg=22.8, size_fraction_pct=92, foreign_matter_pct=0.5,
+)
+check = checker.check_single_lot(result, spec)
+print(f"Lot {result.lot_id}: {check['overall_status']} — penalties: ${check['total_penalty']:.2f}")
+# Lot LOT-2024-01: FAIL — penalties: $3.75
+
+# Multi-lot aggregate compliance
+from coal_quality.compliance_checker import ComplianceChecker, ContractSpec, InspectionResult
+
+checker = ComplianceChecker()
+mc = checker.check_multi_lot([result, another_lot], spec)
+print(f"Pass rate: {mc['pass_rate_pct']:.1f}%  |  Total penalties: ${mc['total_penalties']:.2f}")
+
+# Lot risk classification
+risk = checker.lot_risk_classification(result, spec)
+print(f"Risk: {risk['overall_risk']} — {risk['risk_signal']}")
+
+# Acceptance probability (logistic model)
+prob = checker.acceptance_probability(result, spec)
+print(f"Acceptance probability: {prob:.2%}")
+
+# Vendor performance summary
+perf_df = checker.vendor_performance_summary([(result, spec), (lot2, spec2)])
+print(perf_df[['vendor', 'total_lots', 'pass_rate_pct', 'avg_penalty_usd_t']])
+```
 ```
 
 ### Blending Simulation
