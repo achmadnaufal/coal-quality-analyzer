@@ -29,13 +29,57 @@ Built for coal trading, mine operations, and export compliance workflows across 
 
 ---
 
-## 📦 Quick Start
+## Quick Start
 
 ```bash
 git clone https://github.com/achmadnaufal/coal-quality-analyzer.git
 cd coal-quality-analyzer
 pip install -r requirements.txt
 ```
+
+### Running Tests
+
+```bash
+# Run the full test suite
+pytest tests/ -v --tb=short
+
+# Run only the core analyzer tests
+pytest tests/test_analyzer.py -v
+
+# Run with coverage report
+pytest tests/ --cov=. --cov-report=term-missing
+```
+
+### Using the Sample Data
+
+A ready-to-use demo dataset with 20 realistic coal samples (Indonesian and Australian) is in `demo/sample_data.csv`:
+
+```python
+import pandas as pd
+from quality_metrics import CoalQualityAnalyzer
+
+df = pd.read_csv("demo/sample_data.csv")
+
+results = []
+for _, row in df.iterrows():
+    analyzer = CoalQualityAnalyzer(
+        sample_id=row["sample_id"],
+        ash_percent=row["ash_content_pct"],
+        moisture_percent=row["total_moisture_pct"],
+        sulfur_percent=row["total_sulfur_pct"],
+        calorific_value_mj_kg=row["calorific_value_kcal_kg"] / 238.8,  # kcal/kg -> MJ/kg
+        volatile_matter_percent=row["volatile_matter_pct"],
+        fixed_carbon_percent=row["fixed_carbon_pct"],
+    )
+    results.append(analyzer.analyze())
+
+summary = pd.DataFrame(results)
+print(summary[["sample_id", "quality_grade", "net_calorific_mj_kg"]])
+```
+
+The CSV includes columns: `sample_id`, `seam_name`, `pit_id`, `total_moisture_pct`,
+`inherent_moisture_pct`, `ash_content_pct`, `volatile_matter_pct`, `fixed_carbon_pct`,
+`calorific_value_kcal_kg`, `total_sulfur_pct`, `hgi`, `size_fraction_mm`, `sampling_date`.
 
 ---
 

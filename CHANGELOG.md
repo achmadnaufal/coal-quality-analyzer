@@ -1,3 +1,19 @@
+# Changelog
+
+## [0.7.0] - 2026-04-15
+### Added
+- Unit tests with pytest (`tests/test_analyzer.py`) covering parameter validation,
+  spec compliance, basis conversion, statistical summary, and edge cases (8+ tests)
+- Sample data for demo purposes (`demo/sample_data.csv`) — 20 rows of realistic
+  Indonesian (Kalimantan, Sumatra) and Australian (Bowen Basin, Hunter Valley) coal
+- Comprehensive docstrings across `quality_metrics.py` with Args, Returns, Raises,
+  and Example sections
+- Input validation and edge case handling in `CoalQualityAnalyzer`:
+  - Proximate analysis closure check (ash + VM + FC must sum to 100 % ± 2 %)
+  - Guard against negative volatile matter and fixed carbon inputs
+  - NCV clipped to zero when moisture penalty exceeds GCV
+- Improved README: Quick Start, Sample Data usage, Running Tests section
+
 ## [0.6.0] - 2026-04-14
 
 ### Added
