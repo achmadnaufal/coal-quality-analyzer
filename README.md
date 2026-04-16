@@ -83,6 +83,97 @@ The CSV includes columns: `sample_id`, `seam_name`, `pit_id`, `total_moisture_pc
 
 ---
 
+## New: SO2 Emission Estimator
+
+`src/sulfur_dioxide_emission_estimator.py` estimates sulfur dioxide (SO2)
+emissions from burning coal, returning kg SO2 per tonne and per MWh — ready
+for environmental compliance reporting and boiler benchmarking.
+
+**Capabilities:**
+- Stoichiometric SO2 calculation (S + O2 -> SO2, factor 2.0 kg SO2 / kg S)
+- Combustion ash-retention correction (fraction of S trapped in fly/bottom ash)
+- FGD (flue-gas desulfurization) abatement credit
+- Net electricity-based intensity (kg SO2 / MWh) using plant thermal efficiency
+- Regulatory threshold check (`exceeds_threshold`)
+- Batch processing for CSV-loaded datasets
+
+### Step-by-step usage
+
+**1. Single sample**
+
+```python
+import sys
+sys.path.insert(0, "src")
+
+from sulfur_dioxide_emission_estimator import CoalSample, estimate_so2_emission
+
+sample = CoalSample(
+    sample_id="KAL-001",
+    total_sulfur_pct=0.38,          # % air-dried basis
+    calorific_value_kcal_kg=4850,   # kcal/kg
+    plant_efficiency_pct=36.0,      # subcritical PC boiler
+    fgd_efficiency_pct=0.0,         # no FGD
+    combustion_retention_pct=2.0,   # 2 % S retained in ash (AP-42 default)
+)
+
+result = estimate_so2_emission(sample)
+print(f"SO2: {result.so2_kg_per_tonne:.2f} kg/t")
+print(f"SO2: {result.so2_kg_per_mwh:.4f} kg/MWh")
+print(f"Raw emission factor: {result.emission_factor_raw_kg_per_tonne:.2f} kg/t")
+```
+
+**2. With FGD abatement**
+
+```python
+sample_fgd = CoalSample(
+    sample_id="KAL-002",
+    total_sulfur_pct=1.2,
+    calorific_value_kcal_kg=5200,
+    fgd_efficiency_pct=90.0,   # 90 % SO2 capture
+)
+
+result_fgd = estimate_so2_emission(sample_fgd)
+print(f"FGD reduces SO2 by {result_fgd.fgd_reduction_kg_per_tonne:.2f} kg/t")
+print(f"Net SO2: {result_fgd.so2_kg_per_tonne:.2f} kg/t")
+```
+
+**3. Regulatory threshold check**
+
+```python
+from sulfur_dioxide_emission_estimator import exceeds_threshold
+
+LIMIT_KG_PER_MWH = 0.03   # example national emission standard
+
+if exceeds_threshold(result, threshold_kg_per_mwh=LIMIT_KG_PER_MWH):
+    print("WARNING: emission limit exceeded — FGD or blend adjustment required")
+else:
+    print("Compliant with emission standard")
+```
+
+**4. Batch estimation from CSV**
+
+```python
+import pandas as pd
+from sulfur_dioxide_emission_estimator import CoalSample, estimate_batch
+
+df = pd.read_csv("demo/sample_data.csv")
+
+samples = [
+    CoalSample(
+        sample_id=row["sample_id"],
+        total_sulfur_pct=row["total_sulfur_pct"],
+        calorific_value_kcal_kg=row["calorific_value_kcal_kg"],
+    )
+    for _, row in df.iterrows()
+]
+
+results = estimate_batch(samples)
+for r in results:
+    print(f"{r.sample_id}: {r.so2_kg_per_tonne:.2f} kg SO2/t  |  {r.so2_kg_per_mwh:.4f} kg/MWh")
+```
+
+---
+
 ## 💡 Usage Examples
 
 ### Grade Classification

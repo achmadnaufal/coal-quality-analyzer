@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased] - 2026-04-17
+
+### Added
+- **SO2 Emission Estimator** (`src/sulfur_dioxide_emission_estimator.py`)
+  - `CoalSample` frozen dataclass: sulfur %, GCV, plant efficiency, FGD efficiency, combustion retention
+  - `EmissionResult` frozen dataclass: kg SO2/tonne, kg SO2/MWh (net and gross), raw emission factor, FGD reduction, warnings
+  - `estimate_so2_emission()`: stoichiometric SO2 calculation with retention correction and FGD abatement
+  - `estimate_batch()`: vectorized estimation over sequences of samples; returns empty list for empty input
+  - `exceeds_threshold()`: boolean regulatory compliance check against a kg SO2/MWh limit
+  - Input boundary validation with descriptive warnings for out-of-range sulfur, efficiency, and retention values
+  - Raises `ValueError` for non-positive calorific value, `TypeError` for wrong argument type
+  - 21 pytest tests in `tests/test_sulfur_dioxide_emission_estimator.py` covering happy path, zero sulfur, empty batch, FGD, out-of-range inputs, parametrized stoichiometry, and threshold checks
+  - README section "New: SO2 Emission Estimator" with 4-step usage guide including batch CSV workflow
+
 ## [0.7.0] - 2026-04-15
 ### Added
 - Unit tests with pytest (`tests/test_analyzer.py`) covering parameter validation,
