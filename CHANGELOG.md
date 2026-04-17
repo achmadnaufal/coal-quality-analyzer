@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased] - 2026-04-18
+
+### Added
+- **Hardgrove Grindability Index (HGI) Analyzer** (`src/hardgrove_grindability_analyzer.py`)
+  - `HGISample` frozen dataclass: HGI value, surface moisture %, ash %
+  - `HGIAnalysis` frozen dataclass: corrected HGI, class, Bond W_i, mill kWh/t, capacity de-rate, warning
+  - `GrindabilityClass` enum: very_hard, hard, medium, soft, very_soft (per ASTM D409 bands)
+  - `correct_hgi_for_moisture()`: ISO 5074 Annex B moisture correction with clamping to a 1.0 floor
+  - `classify_grindability()`: categorical band derived from corrected HGI
+  - `bond_work_index()`: Bond W_i (kWh/short ton) from `W_i = 435 / HGI^1.25`
+  - `mill_specific_energy()`: kWh/tonne mill consumption scaled from 12 kWh/t baseline at HGI 50
+  - `capacity_derate_percent()`: throughput de-rate vs the 50-HGI reference
+  - `analyze_sample()` / `analyze_batch()`: full pipeline, batch order preserved, empty input returns []
+  - `meets_specification()`: buyer-window screening (default 45-65)
+  - Validation: raises `ValueError` for non-positive HGI, negative moisture, ash > 100% or < 0; raises `TypeError` for wrong argument type; non-fatal warnings for out-of-typical-range inputs
+  - Wired into `src/__init__.py` for top-level import
+  - 35 pytest tests in `tests/test_hardgrove_grindability_analyzer.py` covering happy path, moisture correction (parametrized), classification boundaries, mill physics monotonicity, batch order, empty batch, division-by-zero guards, type validation, and buyer spec edges
+  - README section "New: Hardgrove Grindability (HGI) Analyzer" with 3-step usage walkthrough
+
 ## [Unreleased] - 2026-04-17
 
 ### Added

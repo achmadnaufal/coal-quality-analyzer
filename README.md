@@ -174,6 +174,82 @@ for r in results:
 
 ---
 
+## New: Hardgrove Grindability (HGI) Analyzer
+
+`src/hardgrove_grindability_analyzer.py` interprets HGI lab results to
+estimate pulveriser performance, mill power consumption, and buyer-spec
+compliance for thermal coal.
+
+**Capabilities:**
+- ISO 5074 Annex B moisture correction of as-measured HGI
+- Categorical class: `very_hard`, `hard`, `medium`, `soft`, `very_soft`
+- Bond Work Index (kWh/short ton) via `W_i = 435 / HGI^1.25`
+- Mill specific energy (kWh/tonne) scaled from a 12 kWh/t baseline at HGI 50
+- Capacity de-rate vs the HGI = 50 reference mill curve
+- Buyer specification screening (default window 45 <= HGI <= 65)
+- Batch processing for CSV-loaded datasets
+
+### Step-by-step usage
+
+**1. Single sample**
+
+```python
+import sys
+sys.path.insert(0, "src")
+
+from hardgrove_grindability_analyzer import HGISample, analyze_sample
+
+sample = HGISample(
+    sample_id="KAL-001",
+    hgi=52.0,                  # as-measured HGI
+    surface_moisture_pct=3.0,  # field moisture at point of test
+    ash_pct=12.5,
+)
+
+result = analyze_sample(sample)
+print(f"Corrected HGI:    {result.hgi_corrected:.2f}")
+print(f"Class:            {result.grindability_class.value}")
+print(f"Mill kWh/t:       {result.mill_specific_energy_kwh_per_t:.2f}")
+print(f"Bond W_i (kWh/st): {result.bond_work_index_kwh_per_short_ton:.2f}")
+print(f"Capacity de-rate: {result.capacity_derate_pct:+.1f}%")
+```
+
+**2. Buyer specification screening**
+
+```python
+from hardgrove_grindability_analyzer import meets_specification
+
+if meets_specification(result, min_hgi=45, max_hgi=65):
+    print("HGI within buyer window")
+else:
+    print("Off-spec: blend or reject")
+```
+
+**3. Batch from the demo CSV**
+
+```python
+import pandas as pd
+from hardgrove_grindability_analyzer import HGISample, analyze_batch
+
+df = pd.read_csv("demo/sample_data.csv")
+samples = [
+    HGISample(
+        sample_id=row["sample_id"],
+        hgi=row["hgi"],
+        surface_moisture_pct=row["total_moisture_pct"],
+        ash_pct=row["ash_content_pct"],
+    )
+    for _, row in df.iterrows()
+]
+
+for r in analyze_batch(samples):
+    print(f"{r.sample_id}: HGI={r.hgi_corrected:5.1f}  "
+          f"{r.grindability_class.value:9s}  "
+          f"{r.mill_specific_energy_kwh_per_t:5.2f} kWh/t")
+```
+
+---
+
 ## 💡 Usage Examples
 
 ### Grade Classification
