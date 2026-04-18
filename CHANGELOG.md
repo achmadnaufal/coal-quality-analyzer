@@ -1,5 +1,36 @@
 # Changelog
 
+All notable changes to this project are documented here. Format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
+adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased] - 2026-04-19
+
+### Added
+- **Quality Deviation Report** (`src/quality_deviation_report.py`)
+  - Frozen dataclasses: `QualitySample`, `ParameterSpec`, `ParameterDeviation`,
+    `SampleReport`, `BatchStatistics`, `BatchReport`
+  - `DeviationSeverity` enum: `within_spec` / `minor` / `major` / `critical`
+  - `analyze_sample()` and `analyze_batch()` pure-function API returning new
+    immutable reports (no input mutation)
+  - Per-parameter severity classification scaled by a `minor_tolerance`
+  - Batch aggregate statistics (mean, population stdev, min, max,
+    out-of-spec count/ratio) and overall compliance ratio
+  - `coefficient_of_variation()` helper for stability analysis
+  - Fail-fast validation: invalid `basis`, negative numerics, out-of-plausible-
+    range values, inverted spec bounds, and missing parameters raise
+    `ValueError` with actionable messages
+  - Zero external dependencies (standard library only)
+  - 12 pytest cases in `tests/test_quality_deviation_report.py` covering
+    happy-path, boundary severity bands, all validation branches, batch
+    aggregation, empty-batch neutral element, and the CV helper
+  - README section "New: Quality Deviation Report" with a runnable walkthrough
+- Expanded `demo/sample_data.csv` to 20 rows with the canonical column set
+  (`sample_id`, `sample_date`, `mine_block`, `seam`, `basis`,
+  `calorific_value_kcal_kg`, `total_moisture_pct`, `inherent_moisture_pct`,
+  `ash_pct`, `volatile_matter_pct`, `fixed_carbon_pct`, `total_sulphur_pct`,
+  `hgi`, `size_category`) across `ar`/`ad`/`db`/`daf` bases
+
 ## [Unreleased] - 2026-04-18
 
 ### Added

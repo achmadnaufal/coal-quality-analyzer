@@ -77,9 +77,61 @@ summary = pd.DataFrame(results)
 print(summary[["sample_id", "quality_grade", "net_calorific_mj_kg"]])
 ```
 
-The CSV includes columns: `sample_id`, `seam_name`, `pit_id`, `total_moisture_pct`,
-`inherent_moisture_pct`, `ash_content_pct`, `volatile_matter_pct`, `fixed_carbon_pct`,
-`calorific_value_kcal_kg`, `total_sulfur_pct`, `hgi`, `size_fraction_mm`, `sampling_date`.
+The CSV includes columns: `sample_id`, `sample_date`, `mine_block`, `seam`,
+`basis` (`ar`/`ad`/`db`/`daf`), `calorific_value_kcal_kg`, `total_moisture_pct`,
+`inherent_moisture_pct`, `ash_pct`, `volatile_matter_pct`, `fixed_carbon_pct`,
+`total_sulphur_pct`, `hgi`, `size_category`.
+
+---
+
+## New: Quality Deviation Report
+
+`src/quality_deviation_report.py` compares a batch of coal samples against
+buyer/spec limits and emits per-parameter deviation severities
+(`within_spec` / `minor` / `major` / `critical`), batch statistics (mean,
+stdev, min, max, out-of-spec ratio), and an overall compliance ratio.
+
+**Capabilities:**
+- Immutable `QualitySample`, `ParameterSpec`, `SampleReport`, `BatchReport`
+  dataclasses (all frozen — see coding-style rule on immutability)
+- Severity bands scaled by a per-parameter `minor_tolerance`
+- Strict input validation: invalid `basis`, negative or out-of-plausible-range
+  numeric values, missing parameters, and inverted spec bounds all raise
+  `ValueError` with actionable messages
+- Zero-dependency (standard library only)
+
+### Step-by-step usage
+
+```python
+from src.quality_deviation_report import (
+    ParameterSpec, QualitySample, analyze_batch,
+)
+
+specs = [
+    ParameterSpec("calorific_value_kcal_kg", min_value=5000.0, minor_tolerance=100.0),
+    ParameterSpec("total_moisture_pct", max_value=30.0, minor_tolerance=1.0),
+    ParameterSpec("ash_pct", max_value=10.0, minor_tolerance=0.5),
+    ParameterSpec("total_sulphur_pct", max_value=0.8, minor_tolerance=0.1),
+]
+
+samples = [
+    QualitySample("KAL-001", "ar", 4850, 28.5, 6.8, 40.2, 52.7, 0.38),
+    QualitySample("KAL-007", "ar", 5520, 18.2, 12.4, 35.2, 53.4, 0.72),
+]
+
+report = analyze_batch(samples, specs)
+print(f"Compliance: {report.compliance_ratio:.0%} ({report.compliant_count}/{report.total_samples})")
+for sample_report in report.sample_reports:
+    print(sample_report.sample_id, sample_report.worst_severity.value)
+```
+
+**Example output**
+
+```
+Compliance: 50% (1/2)
+KAL-001 minor
+KAL-007 critical
+```
 
 ---
 
