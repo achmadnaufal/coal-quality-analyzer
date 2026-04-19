@@ -35,6 +35,50 @@ Built for coal trading, mine operations, and export compliance workflows across 
 git clone https://github.com/achmadnaufal/coal-quality-analyzer.git
 cd coal-quality-analyzer
 pip install -r requirements.txt
+
+# CLI demo: sample analysis + grade + export premium + compliance + blending
+python3 demo/run_demo.py
+```
+
+### Demo output
+
+```text
+$ python3 demo/run_demo.py
+================================================================
+Coal Quality Analyzer — demo run
+================================================================
+
+1) Sample analysis (LOT-2026-04-19):
+   sample_id                LOT-2026-04-19
+   ash_percent              11.2
+   moisture_percent         12.5
+   sulfur_percent           0.65
+   gross_calorific_mj_kg    24.8
+   net_calorific_mj_kg      0.0
+   quality_grade            premium
+
+2) Quick grade (static API): classify_coal_grade(ash, sulfur)
+   ash=10.0% sulfur=0.60%  →  premium
+   ash=14.0% sulfur=1.00%  →  high_grade
+   ash=16.0% sulfur=1.40%  →  standard
+   ash=22.0% sulfur=2.50%  →  low_grade
+
+3) Export premium vs HBA $90/t benchmark, 25.0 MJ/kg:
+   Adjusted price: $88.20/t  (discount)
+   Total adj:      $-1.80/t   GCV ratio: 0.98
+
+4) Buyer specification compliance:
+   Compliant: True  |  Compliance rate: 100.0%
+     ✓ gcv        value=24.8   min=23.0 max=None
+     ✓ ash        value=11.5   min=None max=12.0
+     ✓ sulfur     value=0.65   min=None max=1.0
+     ✓ moisture   value=12.0   min=None max=14.0
+
+5) Blending 60/40 — Source A (premium) + Source B (low-grade):
+   gcv        5160.0
+   ash        11.18
+   sulfur     0.74
+   moisture   13.2
 ```
 
 ### Running Tests

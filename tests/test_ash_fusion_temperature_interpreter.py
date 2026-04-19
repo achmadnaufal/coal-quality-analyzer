@@ -60,7 +60,7 @@ class TestAshComposition:
     def test_fouling_index(self):
         comp = make_ash_comp(na2o=2.0)
         fi = comp.fouling_index
-        assert fi == round(comp.base_acid_ratio * 2.0, 5)
+        assert fi == pytest.approx(comp.base_acid_ratio * 2.0, abs=1e-9)
 
     def test_slagging_index_rs(self):
         comp = make_ash_comp(sulfur=1.0)

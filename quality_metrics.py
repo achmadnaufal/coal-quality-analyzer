@@ -9,7 +9,7 @@ References:
     - ASTM D388 Standard Classification of Coals by Rank
     - Indonesian Ministry of Energy Regulation No. 23/2018 (HBA benchmark)
 """
-from typing import Dict
+from typing import Dict, List
 from enum import Enum
 
 
@@ -256,4 +256,173 @@ class CoalQualityAnalyzer:
             "gross_calorific_mj_kg": round(self.calorific_value_mj_kg, 2),
             "net_calorific_mj_kg": round(self.calculate_net_calorific_value(), 2),
             "quality_grade": self.grade_coal().value,
+        }
+
+    # ------------------------------------------------------------------
+    # Static API — stateless utilities for batch / cross-sample work.
+    # Mirrors the patterns used in batch CSV pipelines (see demo/run_demo.py).
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def calculate_energy_content(
+        carbon_pct: float,
+        hydrogen_pct: float,
+        oxygen_pct: float,
+        nitrogen_pct: float,
+        sulfur_pct: float,
+    ) -> float:
+        """Net calorific value via the SI-form Dulong formula (MJ/kg).
+
+        GCV = 0.3383*C + 1.443*(H - O/8) + 0.0942*S, where C/H/O/S are
+        mass percent (Speight, Handbook of Coal Analysis).
+        """
+        ncv_mj = (
+            0.3383 * carbon_pct
+            + 1.443 * (hydrogen_pct - oxygen_pct / 8)
+            + 0.0942 * sulfur_pct
+        )
+        return round(ncv_mj, 2)
+
+    @staticmethod
+    def classify_coal_grade(ash_content: float, sulfur_content: float) -> str:
+        """Classify coal grade from ash + sulfur (returns a string label)."""
+        if ash_content <= 12 and sulfur_content <= 0.8:
+            return "premium"
+        if ash_content <= 15 and sulfur_content <= 1.2:
+            return "high_grade"
+        if ash_content <= 18 and sulfur_content <= 1.5:
+            return "standard"
+        return "low_grade"
+
+    @staticmethod
+    def calculate_quality_index(parameters: Dict[str, float]) -> float:
+        """Overall 0-100 quality index from a parameters dict (ash/sulfur/moisture/carbon)."""
+        score = 100.0
+        if parameters.get("ash", 0) > 15:
+            score -= min((parameters["ash"] - 15) * 2, 30)
+        if parameters.get("sulfur", 0) > 1.2:
+            score -= min((parameters["sulfur"] - 1.2) * 10, 25)
+        if parameters.get("moisture", 0) > 15:
+            score -= min((parameters["moisture"] - 15) * 1.5, 20)
+        if parameters.get("carbon", 0) < 70:
+            score -= min((70 - parameters["carbon"]) * 0.8, 25)
+        return max(round(score, 1), 0)
+
+    @staticmethod
+    def blend_coals(
+        coal_samples: List[Dict[str, float]],
+        weights: List[float],
+    ) -> Dict[str, float]:
+        """Weighted-average blend of multiple coal samples (raises if lengths mismatch)."""
+        if len(coal_samples) != len(weights):
+            raise ValueError("Coal samples and weights must have same length")
+        if abs(sum(weights) - 1.0) > 0.01:
+            weights = [w / sum(weights) for w in weights]
+
+        params: set = set()
+        for sample in coal_samples:
+            params.update(sample.keys())
+
+        blended: Dict[str, float] = {}
+        for param in params:
+            weighted_sum = sum(
+                sample.get(param, 0) * weight
+                for sample, weight in zip(coal_samples, weights)
+            )
+            blended[param] = round(weighted_sum, 2)
+        return blended
+
+    @staticmethod
+    def calculate_export_premium(
+        gcv_mj_kg: float,
+        ash_pct: float,
+        sulfur_pct: float,
+        moisture_pct: float,
+        benchmark_price_usd: float = 100.0,
+        benchmark_gcv: float = 25.0,
+    ) -> Dict:
+        """Export price premium/discount vs an HBA-style benchmark."""
+        if gcv_mj_kg <= 0:
+            raise ValueError("gcv_mj_kg must be positive")
+        if benchmark_price_usd <= 0:
+            raise ValueError("benchmark_price_usd must be positive")
+        if not (0 <= ash_pct <= 100):
+            raise ValueError("ash_pct must be between 0 and 100")
+        if not (0 <= sulfur_pct <= 10):
+            raise ValueError("sulfur_pct must be between 0 and 10")
+
+        gcv_ratio = gcv_mj_kg / benchmark_gcv
+        gcv_adj = benchmark_price_usd * (gcv_ratio - 1.0)
+        ash_penalty = max(0.0, (ash_pct - 10.0) * 0.40)
+        sulfur_penalty = max(0.0, (sulfur_pct - 0.8) * 15.0)
+        moisture_penalty = max(0.0, (moisture_pct - 12.0) * 0.25)
+        total_adj = gcv_adj - ash_penalty - sulfur_penalty - moisture_penalty
+        adjusted_price = max(0.0, benchmark_price_usd + total_adj)
+
+        return {
+            "adjusted_price_usd_per_tonne": round(adjusted_price, 2),
+            "benchmark_price_usd_per_tonne": benchmark_price_usd,
+            "total_adjustment_usd": round(total_adj, 2),
+            "premium_or_discount": "premium" if total_adj >= 0 else "discount",
+            "quality_adjustments": {
+                "gcv_adjustment": round(gcv_adj, 2),
+                "ash_penalty": round(-ash_penalty, 2),
+                "sulfur_penalty": round(-sulfur_penalty, 2),
+                "moisture_penalty": round(-moisture_penalty, 2),
+            },
+            "calorific_ratio": round(gcv_ratio, 3),
+        }
+
+    @staticmethod
+    def check_specification_compliance(params: Dict, spec: Dict) -> Dict:
+        """Per-parameter min/max compliance check for a single coal sample."""
+        if not params:
+            raise ValueError("params dict cannot be empty")
+        if not spec:
+            raise ValueError("spec dict cannot be empty")
+
+        results: Dict[str, Dict] = {}
+        all_compliant = True
+        violations: List[str] = []
+
+        for param, limits in spec.items():
+            if param not in params:
+                results[param] = {"status": "missing", "value": None, "compliant": False}
+                violations.append(f"{param}: missing")
+                all_compliant = False
+                continue
+
+            value = params[param]
+            min_val = limits.get("min")
+            max_val = limits.get("max")
+            compliant = True
+            param_violations: List[str] = []
+            if min_val is not None and value < min_val:
+                compliant = False
+                param_violations.append(f"below min ({min_val})")
+            if max_val is not None and value > max_val:
+                compliant = False
+                param_violations.append(f"above max ({max_val})")
+            if not compliant:
+                all_compliant = False
+                violations.append(f"{param}: {', '.join(param_violations)}")
+
+            results[param] = {
+                "value": value,
+                "compliant": compliant,
+                "violations": param_violations,
+                "min_spec": min_val,
+                "max_spec": max_val,
+            }
+
+        return {
+            "compliant": all_compliant,
+            "compliance_rate": round(
+                sum(1 for r in results.values() if r.get("compliant"))
+                / len(results)
+                * 100,
+                1,
+            ),
+            "violations": violations,
+            "parameters": results,
         }
