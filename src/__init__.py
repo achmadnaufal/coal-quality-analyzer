@@ -13,6 +13,13 @@ from .hardgrove_grindability_analyzer import (
     meets_specification,
     mill_specific_energy,
 )
+from .blend_ratio_optimizer import (
+    BlendResult,
+    BlendTarget,
+    CoalSource,
+    optimize_binary_blend,
+    optimize_blend,
+)
 
 __all__ = [
     "GrindabilityClass",
@@ -26,4 +33,9 @@ __all__ = [
     "correct_hgi_for_moisture",
     "meets_specification",
     "mill_specific_energy",
+    "BlendResult",
+    "BlendTarget",
+    "CoalSource",
+    "optimize_binary_blend",
+    "optimize_blend",
 ]

@@ -4,7 +4,66 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased] - 2026-04-19
+## [Unreleased] - 2026-04-20
+
+### Added
+- **Blend Ratio Optimizer** (`src/blend_ratio_optimizer.py`)
+  - Immutable frozen dataclasses: `CoalSource` (with physical-range
+    validation), `BlendTarget` (contractual CV + ash/sulfur/moisture caps),
+    and `BlendResult` (ratios, cap violations, method label)
+  - `optimize_binary_blend()` — closed-form O(1) two-source solver:
+    `w_a = (target_cv - cv_b) / (cv_a - cv_b)`, clipped to [0, 1]
+  - `optimize_blend()` — n-source least-absolute-deviation LP via
+    `scipy.optimize.linprog` (HiGHS backend): minimises
+    `|blend_cv - target|` subject to mass balance, CV split, and linear cap
+    constraints on ash, total sulfur, and total moisture
+  - Diagnostic infeasibility fallback: when no blend satisfies every cap,
+    returns uniform 1/n ratios with `feasible=False` and a human-readable
+    violation list so operators can see which cap forced the reject
+  - Physical bounds enforced at construction: CV in `[1000, 8000]` kcal/kg,
+    ash / moisture in `[0, 100] %`, sulfur in `[0, 10] %`; duplicate
+    `source_id` values raise `ValueError`
+  - Single-source edge case handled (returns ratio (1.0,) with
+    `method="single_source"`)
+  - Wired into `src/__init__.py` for top-level import
+  - 34 pytest cases in `tests/test_blend_ratio_optimizer.py` covering
+    validation (moisture > 100 %, negative ash, CV out of range, whitespace
+    IDs), closed-form math on hand-checked midpoint / clipping / identical-CV
+    cases, ash and sulfur cap violation detection, LP feasibility for
+    three-source blends, infeasibility fallback, and `BlendResult`
+    immutability + `as_dict()` roundtrip
+  - Standards: ASTM D3180, ISO 17246, Newcastle NAR 6000 spec reference
+- Extended `tests/test_edge_cases.py` (+30 pytest cases) covering:
+  - Empty DataFrames, NaN detection, missing-column detection
+  - `CoalQualityValidator` record and DataFrame paths (missing fields,
+    negative ash, empty sample IDs, duplicates, missing values)
+  - `CoalQualityAnalyzer` physical-range guardrails: moisture > 100 %,
+    negative ash, CV <= 0, empty sample_id, proximate-closure deviation
+  - Basis conversion math (AR → AD, AR → DB, AR → DAF) with hand-checked
+    ASTM D3180 mixing factors and a round-trip preservation test
+  - DAF denominator-zero, missing-moisture-input, invalid-basis, and
+    same-basis edge cases
+  - Specification compliance boundary behaviour (exact-max-is-compliant,
+    above-max / below-min flagging, missing parameter, empty inputs, and
+    partial compliance rate arithmetic)
+
+### Changed
+- `demo/sample_data.csv` renormalised to the canonical ADB schema requested
+  by downstream consumers: `sample_id`, `mine_site`, `seam`, `sample_date`,
+  `total_moisture_pct`, `ash_adb_pct`, `volatile_matter_adb_pct`,
+  `fixed_carbon_adb_pct`, `total_sulfur_pct`, `calorific_value_adb_kcal_kg`,
+  `hgi`. 20 realistic Indonesian samples across seven major producers
+  (Kaltim Prima, Adaro, Bayan, Berau, Indo Tambangraya, Kideco, Banpu).
+  Proximate components (ash + VM + FC) close to 100 % so the values load
+  cleanly into `CoalQualityAnalyzer` without tripping the
+  `_PROXIMATE_SUM_TOLERANCE_PCT` guard.
+- README sections updated: new "Install" / "Quickstart" top block, basis
+  conventions table (AR / AD / DB / DAF) with ASTM D3180 and ISO 17246
+  references, expanded feature matrix linking every module file, and a new
+  "Blend Ratio Optimizer" walkthrough built around a Newcastle NAR 6000
+  buyer spec.
+
+## [Previous Unreleased] - 2026-04-19
 
 ### Added
 - **Quality Deviation Report** (`src/quality_deviation_report.py`)

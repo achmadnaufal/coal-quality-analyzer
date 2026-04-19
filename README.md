@@ -1,31 +1,74 @@
-# ⛏️ Coal Quality Analyzer
+# Coal Quality Analyzer
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-567%20passing-brightgreen.svg)]()
 [![Domain](https://img.shields.io/badge/domain-Mining%20%26%20Energy-555555.svg)]()
-[![Standard](https://img.shields.io/badge/standard-HBA%20%7C%20ICI%204%20%7C%20Newcastle-orange.svg)]()
+[![Standards](https://img.shields.io/badge/standards-ASTM%20D3180%20%7C%20ISO%2017246%20%7C%20ISO%201928-orange.svg)]()
 [![Last Commit](https://img.shields.io/github/last-commit/achmadnaufal/coal-quality-analyzer.svg)]()
 
-> **End-to-end coal quality analytics for Indonesian thermal coal operations** — grade classification, blending simulation, export price benchmarking, stockpile thermal risk modeling, and specification compliance — all in Python.
+> **End-to-end coal quality analytics toolkit** — parameter analysis, reporting-basis conversion (AR / AD / DB / DAF), blending simulation, blend-ratio optimisation against buyer specs, export price benchmarking, HGI grindability interpretation, washability / Tromp curve analysis, stockpile thermal risk modelling, and specification compliance against Newcastle / ICI / HBA benchmarks — built in Python for Indonesian thermal coal operations.
 
-Built for coal trading, mine operations, and export compliance workflows across Kalimantan and Sumatra operations.
+Built for coal trading, mine operations, lab QC, and export compliance workflows across Kalimantan and Sumatra. All formulae follow ASTM D3180, ISO 17246 (proximate analysis), and ISO 1928 (calorific value).
+
+## Install
+
+```bash
+git clone https://github.com/achmadnaufal/coal-quality-analyzer.git
+cd coal-quality-analyzer
+pip install -r requirements.txt
+```
+
+Requires Python 3.9 or newer. Dependencies: `pandas`, `numpy`, `scipy`, `matplotlib`, `rich`.
+
+### Quickstart — load demo data and run quality analysis
+
+```python
+import pandas as pd
+from quality_metrics import CoalQualityAnalyzer
+
+df = pd.read_csv("demo/sample_data.csv")
+
+reports = []
+for _, row in df.iterrows():
+    a = CoalQualityAnalyzer(
+        sample_id=row["sample_id"],
+        ash_percent=row["ash_adb_pct"],
+        moisture_percent=row["total_moisture_pct"],
+        sulfur_percent=row["total_sulfur_pct"],
+        calorific_value_mj_kg=row["calorific_value_adb_kcal_kg"] / 238.8,
+        volatile_matter_percent=row["volatile_matter_adb_pct"],
+        fixed_carbon_percent=row["fixed_carbon_adb_pct"],
+    )
+    reports.append(a.analyze())
+
+print(pd.DataFrame(reports)[["sample_id", "quality_grade", "net_calorific_mj_kg"]].head())
+```
+
+The sample contains 20 realistic Indonesian coal records across seven major producers (Kaltim Prima, Adaro, Bayan, Berau, ITM, Kideco, Banpu).
 
 ---
 
-## 🚀 Features
+## Features
 
-| Module | Capability |
-|---|---|
-| 🔬 **Quality Analysis** | GCV, ash, moisture, sulfur, volatile matter — full proximate analysis |
-| 🏷️ **Grade Classification** | Automatic A/B/C/D grading by calorific value and quality parameters |
-| ⚖️ **Blending Simulator** | Blend two or more coal sources to meet buyer specification |
-| 💵 **Price Calculator** | Export premium/discount vs HBA, ICI 4, and Newcastle benchmarks |
-| ✅ **Compliance Checker** | Per-parameter violation detail against buyer spec limits |
-| 🧾 **ContractComplianceChecker** *(v0.6)* | Lot-level and aggregate contractual compliance — PASS/FAIL per parameter, penalty calculation, lot risk classification, vendor performance summary, and logistic acceptance probability |
-| 🌡️ **Stockpile Heat Model** | Arrhenius thermal simulation — spontaneous combustion risk flags |
-| 📊 **Batch Processing** | Analyze CSV/Excel batches with summary statistics |
-| 🧪 **Washability & Tromp Analyzer** *(v2.3)* | Float-sink washability table, Tromp partition curve, Ep value, optimal cut density, and organic efficiency per AS 4156.1 / Napier-Munn methodology |
+| Module | File | Capability |
+|---|---|---|
+| **Quality Analysis** | `quality_metrics.py` | GCV, ash, moisture, sulfur, VM — full proximate analysis |
+| **Grade Classification** | `quality_metrics.py` | Premium / high / medium / low tiers from composite score |
+| **Basis Converter** | `src/moisture_bases_converter.py` | AR ↔ AD ↔ DB ↔ DAF per ASTM D3180 / ISO 17246 |
+| **Blending Simulator** | `quality_metrics.py`, `src/coal_blending_quality_predictor.py` | Linear mass-weighted blend of two or more sources |
+| **Blend Ratio Optimizer** | `src/blend_ratio_optimizer.py` | LP solver hitting a target CV under ash / sulfur / moisture caps (e.g. Newcastle NAR 6000) |
+| **Calorific Value Predictor** | `src/calorific_value_predictor.py` | Dulong / Boie formulae from ultimate & proximate analysis |
+| **Price Calculator** | `quality_metrics.py`, `src/thermal_price_index_calculator.py` | Premium / discount vs HBA, ICI 4, Newcastle |
+| **Spec Compliance Checker** | `quality_metrics.py`, `src/export_compliance.py` | Per-parameter violation detail against buyer spec |
+| **Contract Compliance Checker** | `coal_quality/compliance_checker.py` | Lot-level PASS/FAIL, penalty calc, vendor performance summary |
+| **Quality Deviation Report** | `src/quality_deviation_report.py` | Batch severity classification + aggregate statistics |
+| **HGI Analyzer** | `src/hardgrove_grindability_analyzer.py` | ISO 5074 moisture correction, Bond W_i, mill kWh/t de-rate |
+| **SO2 Emission Estimator** | `src/sulfur_dioxide_emission_estimator.py` | Stoichiometric SO2 with FGD / ash retention |
+| **Washability & Tromp** | `src/washability_tromp_analyzer.py` | Float-sink table, Tromp partition, Ep, organic efficiency (AS 4156.1) |
+| **Stockpile Heat Model** | `src/stockpile_heat_balance_calculator.py`, `src/spontaneous_combustion_risk*.py` | Arrhenius thermal simulation, self-heating risk flags |
+| **Ash Fusion Interpreter** | `src/ash_fusion_temperature_interpreter.py` | IDT / ST / HT / FT temperature interpretation |
+| **Wash Plant Yield** | `src/wash_plant_yield_calculator.py` | Yield reconciliation and recovery modelling |
 
 ---
 
@@ -96,7 +139,7 @@ pytest tests/ --cov=. --cov-report=term-missing
 
 ### Using the Sample Data
 
-A ready-to-use demo dataset with 20 realistic coal samples (Indonesian and Australian) is in `demo/sample_data.csv`:
+A ready-to-use demo dataset with 20 realistic Indonesian coal samples (Kaltim Prima, Adaro, Bayan, Berau, Indo Tambangraya, Kideco, Banpu) is in `demo/sample_data.csv`. All proximate values are reported on the **air-dried basis (ADB)** per ASTM D3180 / ISO 17246; total moisture and sulfur are reported on the as-received basis:
 
 ```python
 import pandas as pd
@@ -108,12 +151,12 @@ results = []
 for _, row in df.iterrows():
     analyzer = CoalQualityAnalyzer(
         sample_id=row["sample_id"],
-        ash_percent=row["ash_content_pct"],
+        ash_percent=row["ash_adb_pct"],
         moisture_percent=row["total_moisture_pct"],
         sulfur_percent=row["total_sulfur_pct"],
-        calorific_value_mj_kg=row["calorific_value_kcal_kg"] / 238.8,  # kcal/kg -> MJ/kg
-        volatile_matter_percent=row["volatile_matter_pct"],
-        fixed_carbon_percent=row["fixed_carbon_pct"],
+        calorific_value_mj_kg=row["calorific_value_adb_kcal_kg"] / 238.8,  # kcal/kg -> MJ/kg
+        volatile_matter_percent=row["volatile_matter_adb_pct"],
+        fixed_carbon_percent=row["fixed_carbon_adb_pct"],
     )
     results.append(analyzer.analyze())
 
@@ -121,10 +164,25 @@ summary = pd.DataFrame(results)
 print(summary[["sample_id", "quality_grade", "net_calorific_mj_kg"]])
 ```
 
-The CSV includes columns: `sample_id`, `sample_date`, `mine_block`, `seam`,
-`basis` (`ar`/`ad`/`db`/`daf`), `calorific_value_kcal_kg`, `total_moisture_pct`,
-`inherent_moisture_pct`, `ash_pct`, `volatile_matter_pct`, `fixed_carbon_pct`,
-`total_sulphur_pct`, `hgi`, `size_category`.
+**Columns:** `sample_id`, `mine_site`, `seam`, `sample_date`,
+`total_moisture_pct` (AR), `ash_adb_pct`, `volatile_matter_adb_pct`,
+`fixed_carbon_adb_pct`, `total_sulfur_pct` (AR), `calorific_value_adb_kcal_kg`,
+`hgi`.
+
+### Basis Conventions
+
+Coal quality values depend on the moisture state at which the sample was
+analysed. This project uses ASTM D3180 / ISO 17246 bases throughout:
+
+| Code | Name | Includes |
+|---|---|---|
+| **AR** (ARB, GAR) | As-Received | Surface moisture + inherent moisture + dry matter |
+| **AD** (ADB, GAD) | Air-Dried | Inherent moisture only (lab-equilibrated at ~60 % RH, 25 °C) |
+| **DB** (Dry) | Dry | No moisture |
+| **DAF** | Dry-Ash-Free | No moisture, no ash — organic fraction only |
+
+Use `src/moisture_bases_converter.py` to convert any parameter between
+bases.
 
 ---
 
@@ -258,7 +316,7 @@ samples = [
     CoalSample(
         sample_id=row["sample_id"],
         total_sulfur_pct=row["total_sulfur_pct"],
-        calorific_value_kcal_kg=row["calorific_value_kcal_kg"],
+        calorific_value_kcal_kg=row["calorific_value_adb_kcal_kg"],
     )
     for _, row in df.iterrows()
 ]
@@ -333,7 +391,7 @@ samples = [
         sample_id=row["sample_id"],
         hgi=row["hgi"],
         surface_moisture_pct=row["total_moisture_pct"],
-        ash_pct=row["ash_content_pct"],
+        ash_pct=row["ash_adb_pct"],
     )
     for _, row in df.iterrows()
 ]
@@ -346,7 +404,68 @@ for r in analyze_batch(samples):
 
 ---
 
-## 💡 Usage Examples
+## New: Blend Ratio Optimizer
+
+`src/blend_ratio_optimizer.py` solves the real-world stockyard question — *what
+proportions of my available coal piles hit the target CV while staying under
+the ash, sulfur, and moisture caps in the sales contract?* It supports both a
+closed-form binary blend and an n-source linear program (scipy HiGHS backend).
+
+**Capabilities:**
+- Closed-form two-source solver: O(1), zero solver dependency, used for barge
+  loading and rail dispatch where only two stockpiles feed the shiploader.
+- N-source LP solver (`scipy.optimize.linprog`, HiGHS method) minimising
+  `|blend_cv - target|` subject to linear cap constraints on ash, sulfur,
+  and moisture.
+- Immutable `CoalSource`, `BlendTarget`, `BlendResult` frozen dataclasses.
+- Physical-range validation: raises `ValueError` on CV outside
+  `[1000, 8000]` kcal/kg, ash / moisture outside `[0, 100] %`, sulfur
+  outside `[0, 10] %`, or duplicate `source_id` values.
+- Diagnostic infeasibility handling: when no blend satisfies every cap,
+  returns a uniform `1/n` fallback with `feasible=False` and a human-readable
+  violation list so operators can see which cap forced the reject.
+
+### Step-by-step — Newcastle NAR 6000 spec gate
+
+```python
+import sys
+sys.path.insert(0, "src")
+
+from blend_ratio_optimizer import BlendTarget, CoalSource, optimize_blend
+
+# Three stockpiles (all ADB)
+sources = [
+    CoalSource("KPC-Pinang", cv_kcal_kg=6820, ash_pct=5.4,
+               total_sulfur_pct=0.42, moisture_pct=16.8),
+    CoalSource("ADR-Wara",   cv_kcal_kg=5250, ash_pct=4.1,
+               total_sulfur_pct=0.19, moisture_pct=30.5),
+    CoalSource("BYN-Perkasa", cv_kcal_kg=6050, ash_pct=6.2,
+               total_sulfur_pct=0.58, moisture_pct=21.8),
+]
+
+# Newcastle NAR 6000-style buyer spec
+newcastle = BlendTarget(
+    target_cv_kcal_kg=6000,
+    max_ash_pct=15.0,
+    max_sulfur_pct=0.80,
+    max_moisture_pct=14.0,   # NAR basis — adjust if you report ADB
+    cv_tolerance_kcal_kg=50,
+)
+
+result = optimize_blend(sources, newcastle)
+print(f"Feasible:      {result.feasible}")
+print(f"Spec-compliant: {result.meets_specification}")
+print(f"Blended CV:    {result.blended_cv_kcal_kg} kcal/kg "
+      f"(deviation {result.cv_deviation_kcal_kg:+.1f})")
+for src, ratio in zip(sources, result.ratios):
+    print(f"  {src.source_id:12s}: {ratio:.1%}")
+for v in result.violations:
+    print(f"  ! {v}")
+```
+
+---
+
+## Usage Examples
 
 ### Grade Classification
 
