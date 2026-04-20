@@ -1,5 +1,20 @@
 """Package: coal-quality-analyzer"""
 
+from .coal_rank_classifier import (
+    CoalClass,
+    CoalRank,
+    ProximateSample,
+    RankAnalysis,
+    class_of,
+    classify_batch,
+    classify_sample,
+    gcv_in_btu_per_lb,
+    is_coking_candidate,
+    kcal_per_kg_to_btu_per_lb,
+    parr_fixed_carbon_dmmf,
+    parr_gcv_mmmf_btu_per_lb,
+    rank_rank_ordinal,
+)
 from .hardgrove_grindability_analyzer import (
     GrindabilityClass,
     HGIAnalysis,
@@ -22,15 +37,25 @@ from .blend_ratio_optimizer import (
 )
 
 __all__ = [
+    "CoalClass",
+    "CoalRank",
     "GrindabilityClass",
     "HGIAnalysis",
     "HGISample",
+    "ProximateSample",
+    "RankAnalysis",
     "analyze_batch",
     "analyze_sample",
     "bond_work_index",
     "capacity_derate_percent",
+    "class_of",
+    "classify_batch",
     "classify_grindability",
+    "classify_sample",
     "correct_hgi_for_moisture",
+    "gcv_in_btu_per_lb",
+    "is_coking_candidate",
+    "kcal_per_kg_to_btu_per_lb",
     "meets_specification",
     "mill_specific_energy",
     "BlendResult",
@@ -38,4 +63,7 @@ __all__ = [
     "CoalSource",
     "optimize_binary_blend",
     "optimize_blend",
+    "parr_fixed_carbon_dmmf",
+    "parr_gcv_mmmf_btu_per_lb",
+    "rank_rank_ordinal",
 ]

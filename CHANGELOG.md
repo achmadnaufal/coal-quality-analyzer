@@ -4,6 +4,52 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased] - 2026-04-21
+
+### Added
+- **Coal Rank Classifier (ASTM D388)** (`src/coal_rank_classifier.py`)
+  - Frozen dataclasses: `ProximateSample` (proximate + sulfur + GCV input)
+    and `RankAnalysis` (class, rank, dmmf FC, mmmf GCV, classification
+    axis, warnings)
+  - Enums: `CoalClass` (4-way: anthracitic / bituminous / sub-bituminous /
+    lignitic) and `CoalRank` (13-way: meta-anthracite through lignite B)
+  - `parr_fixed_carbon_dmmf()` — Parr dmmf Fixed Carbon correction
+    (ASTM D388 §X1)
+  - `parr_gcv_mmmf_btu_per_lb()` — Parr moist mmmf GCV correction
+  - `kcal_per_kg_to_btu_per_lb()` / `gcv_in_btu_per_lb()` — ASTM D5865
+    unit conversion with unit whitelist validation
+  - `classify_sample()` / `classify_batch()` — pure-function API returning
+    new immutable `RankAnalysis` objects (no input mutation)
+  - Higher-rank branch (FC_dmmf >= 69 %) classifies by Fixed Carbon;
+    lower-rank branch classifies by GCV_mmmf in Btu/lb with the D720
+    agglomerating tie-break across the 10 500 – 11 500 Btu/lb band
+  - `is_coking_candidate()` helper — flags MV-bit and LV-bit ranks as
+    eligible for metallurgical coke
+  - `rank_rank_ordinal()` — integer lignite-B (0) → meta-anthracite (12)
+    ordering for sorting and trend analysis
+  - `class_of()` — rank → class lookup
+  - Strict validation: `TypeError` for wrong argument type; `ValueError`
+    for bad `gcv_unit`, negative or > 100 % numerics, non-positive GCV,
+    proximate closure failure (M+A+VM+FC outside 100 ± 3), and Parr
+    denominator collapse; non-fatal warnings for >5 % sulfur, >40 % ash,
+    >50 % moisture
+  - Zero external dependencies (standard library only)
+  - Wired into `src/__init__.py` for top-level import
+- 38 pytest cases in `tests/test_coal_rank_classifier.py` covering happy
+  paths across the full rank spectrum (Kalimantan sub-bit, Bowen Basin
+  LVB, PRB, Appalachian anthracite, lignite B), Parr corrections with
+  known-value math, kcal↔Btu conversion, both sides of the agglomeration
+  tie-break band, batch order preservation, empty batch, immutability
+  enforcement, parametrized rank sweep (6 ranks), and all validation
+  branches
+- `sample_data/coal_rank_classifier_samples.csv`: 20 rows of
+  real-world coals (Kalimantan, Sumatra, Bowen Basin, Hunter Valley,
+  Goonyella, PRB, Appalachian, Illinois Basin, PA anthracite, Kuzbass,
+  Witbank, Cerrejón, Mulia, Rhineland lignite, Elk Valley, Tavan Tolgoi,
+  Quang Ninh semi-anthracite, Silesia) with expected rank labels
+- README section "New: Coal Rank Classifier (ASTM D388)" with a runnable
+  walkthrough and feature-table row
+
 ## [Unreleased] - 2026-04-20
 
 ### Added
@@ -63,7 +109,7 @@ adheres to [Semantic Versioning](https://semver.org/).
   "Blend Ratio Optimizer" walkthrough built around a Newcastle NAR 6000
   buyer spec.
 
-## [Previous Unreleased] - 2026-04-19
+## [Unreleased] - 2026-04-19
 
 ### Added
 - **Quality Deviation Report** (`src/quality_deviation_report.py`)

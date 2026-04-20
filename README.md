@@ -59,6 +59,7 @@ The sample contains 20 realistic Indonesian coal records across seven major prod
 | **Blending Simulator** | `quality_metrics.py`, `src/coal_blending_quality_predictor.py` | Linear mass-weighted blend of two or more sources |
 | **Blend Ratio Optimizer** | `src/blend_ratio_optimizer.py` | LP solver hitting a target CV under ash / sulfur / moisture caps (e.g. Newcastle NAR 6000) |
 | **Calorific Value Predictor** | `src/calorific_value_predictor.py` | Dulong / Boie formulae from ultimate & proximate analysis |
+| **Coal Rank Classifier** | `src/coal_rank_classifier.py` | ASTM D388-23 rank (13 ranks, meta-anthracite → lignite B) with Parr dmmf/mmmf corrections and D720 agglomeration tie-break |
 | **Price Calculator** | `quality_metrics.py`, `src/thermal_price_index_calculator.py` | Premium / discount vs HBA, ICI 4, Newcastle |
 | **Spec Compliance Checker** | `quality_metrics.py`, `src/export_compliance.py` | Per-parameter violation detail against buyer spec |
 | **Contract Compliance Checker** | `coal_quality/compliance_checker.py` | Lot-level PASS/FAIL, penalty calc, vendor performance summary |
@@ -183,6 +184,68 @@ analysed. This project uses ASTM D3180 / ISO 17246 bases throughout:
 
 Use `src/moisture_bases_converter.py` to convert any parameter between
 bases.
+
+---
+
+## New: Coal Rank Classifier (ASTM D388)
+
+`src/coal_rank_classifier.py` assigns any coal sample to one of 13 ASTM
+D388-23 ranks (meta-anthracite → lignite B) using the proximate/ultimate
+analysis, Parr mineral-matter corrections, and — at the
+bituminous/sub-bituminous boundary — the D720 agglomerating tie-break.
+
+**Capabilities:**
+- Immutable `ProximateSample` and `RankAnalysis` frozen dataclasses
+- `CoalClass` (4-way) and `CoalRank` (13-way) enums
+- `parr_fixed_carbon_dmmf()` and `parr_gcv_mmmf_btu_per_lb()` for the
+  ASTM D388 §X1 mineral-matter corrections
+- Automatic `kcal/kg` ↔ `Btu/lb` conversion (ASTM D5865)
+- `classify_sample()` / `classify_batch()` pure-function API
+- `is_coking_candidate()` helper flagging MV-bit and LV-bit ranks for
+  metallurgical coke eligibility
+- `rank_rank_ordinal()` integer ordering for sorting and trend analysis
+- Strict validation: proximate closure (M+A+VM+FC = 100 ± 3), unit
+  whitelist, non-negative numerics, non-positive GCV, Parr denominator
+  collapse
+
+### Step-by-step usage
+
+```python
+from src.coal_rank_classifier import (
+    ProximateSample, classify_sample, is_coking_candidate,
+)
+
+sample = ProximateSample(
+    sample_id="AUS-BOW-005",
+    moisture_pct=2.0,
+    ash_pct=7.0,
+    volatile_matter_pct=18.0,
+    fixed_carbon_pct=73.0,
+    sulfur_pct=0.5,
+    gcv=14_700.0,
+    gcv_unit="btu_per_lb",
+    agglomerating=True,
+)
+
+result = classify_sample(sample)
+print(result.coal_class.value, "/", result.coal_rank.value)
+print(f"FC_dmmf = {result.fixed_carbon_dmmf_pct:.1f} %")
+print(f"GCV_mmmf = {result.gcv_mmmf_btu_per_lb:.0f} Btu/lb")
+print(f"Coking candidate: {is_coking_candidate(result)}")
+```
+
+**Example output**
+
+```
+bituminous / low_volatile_bituminous
+FC_dmmf = 80.9 %
+GCV_mmmf = 15923 Btu/lb
+Coking candidate: True
+```
+
+Sample data: `sample_data/coal_rank_classifier_samples.csv` (20 rows of
+real-world Indonesian, Australian, US, Russian, South African, Colombian,
+Mongolian, Vietnamese, Canadian, German, and Polish coals).
 
 ---
 

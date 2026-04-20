@@ -1,0 +1,21 @@
+sample_id,origin,moisture_pct,ash_pct,volatile_matter_pct,fixed_carbon_pct,sulfur_pct,gcv,gcv_unit,agglomerating,expected_rank
+KAL-ARU-001,Kalimantan Arutmin,28.5,6.0,40.2,25.3,0.38,4850,kcal_per_kg,False,sub_bituminous_c
+KAL-KPC-002,Kalimantan KPC,18.2,8.3,38.5,35.0,0.72,5720,kcal_per_kg,False,sub_bituminous_a
+KAL-BAN-003,Kalimantan Banpu,14.8,10.1,36.4,38.7,0.85,6100,kcal_per_kg,False,high_volatile_c_bituminous
+SUM-BSE-004,Sumatra Bukit Asam,12.5,9.8,35.2,42.5,0.48,6380,kcal_per_kg,True,high_volatile_c_bituminous
+AUS-BOW-005,Australia Bowen Basin HCC,2.0,7.0,18.0,73.0,0.50,14700,btu_per_lb,True,low_volatile_bituminous
+AUS-HUN-006,Australia Hunter Valley,5.5,9.5,32.0,53.0,0.55,12800,btu_per_lb,True,high_volatile_a_bituminous
+AUS-GOO-007,Australia Goonyella SSCC,1.5,8.2,21.5,68.8,0.42,14600,btu_per_lb,True,medium_volatile_bituminous
+USA-PRB-008,USA Powder River Basin,28.0,5.0,34.0,33.0,0.40,8600,btu_per_lb,False,sub_bituminous_c
+USA-APP-009,USA Appalachian MVB,3.5,6.0,22.0,68.5,1.20,14500,btu_per_lb,True,medium_volatile_bituminous
+USA-ILB-010,USA Illinois Basin,9.0,9.0,37.0,45.0,2.80,11800,btu_per_lb,True,high_volatile_b_bituminous
+USA-PAN-011,USA Pennsylvania Anthracite,4.0,10.0,5.0,81.0,0.60,13000,btu_per_lb,False,anthracite
+RUS-KUZ-012,Russia Kuzbass,8.5,13.0,28.0,50.5,0.35,12200,btu_per_lb,True,high_volatile_a_bituminous
+ZAF-WIT-013,South Africa Witbank,5.2,14.5,27.0,53.3,0.75,11200,btu_per_lb,True,high_volatile_b_bituminous
+COL-CER-014,Colombia Cerrejón,10.8,7.5,36.5,45.2,0.60,6400,kcal_per_kg,False,high_volatile_c_bituminous
+IDN-LOW-015,Indonesia Low-rank Mulia,38.5,8.5,32.0,21.0,0.25,3250,kcal_per_kg,False,lignite_a
+GER-RHI-016,Germany Rhineland Lignite,45.0,7.0,28.0,20.0,0.35,2500,kcal_per_kg,False,lignite_b
+CAN-ELK-017,Canada Elk Valley,1.8,9.0,20.5,68.7,0.55,14750,btu_per_lb,True,medium_volatile_bituminous
+MNG-TAV-018,Mongolia Tavan Tolgoi,2.5,10.5,24.0,63.0,0.58,14200,btu_per_lb,True,medium_volatile_bituminous
+VNM-QUANG-019,Vietnam Quang Ninh semi-ant,4.5,12.0,8.0,75.5,0.60,13800,btu_per_lb,False,semi_anthracite
+POL-SIL-020,Poland Silesia,6.0,11.0,30.5,52.5,0.65,12500,btu_per_lb,True,high_volatile_a_bituminous
